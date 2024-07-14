@@ -19,15 +19,15 @@ from lnbits.decorators import (
     require_invoice_key,
 )
 
-from . import myextension_ext
+from . import eightball_ext
 from .crud import (
-    create_myextension,
-    update_myextension,
-    delete_myextension,
-    get_myextension,
-    get_myextensions,
+    create_eightball,
+    update_eightball,
+    delete_eightball,
+    get_eightball,
+    get_eightballs,
 )
-from .models import CreateMyExtensionData
+from .models import CreateEightBallData
 
 
 #######################################
@@ -37,8 +37,8 @@ from .models import CreateMyExtensionData
 ## Get all the records belonging to the user
 
 
-@myextension_ext.get("/api/v1/myex", status_code=HTTPStatus.OK)
-async def api_myextensions(
+@eightball_ext.get("/api/v1/myex", status_code=HTTPStatus.OK)
+async def api_eightballs(
     req: Request,
     all_wallets: bool = Query(False),
     wallet: WalletTypeInfo = Depends(get_key_type),
@@ -48,87 +48,87 @@ async def api_myextensions(
         user = await get_user(wallet.wallet.user)
         wallet_ids = user.wallet_ids if user else []
     return [
-        myextension.dict() for myextension in await get_myextensions(wallet_ids, req)
+        eightball.dict() for eightball in await get_eightballs(wallet_ids, req)
     ]
 
 
 ## Get a single record
 
 
-@myextension_ext.get("/api/v1/myex/{myextension_id}", status_code=HTTPStatus.OK)
-async def api_myextension(
-    req: Request, myextension_id: str, WalletTypeInfo=Depends(get_key_type)
+@eightball_ext.get("/api/v1/myex/{eightball_id}", status_code=HTTPStatus.OK)
+async def api_eightball(
+    req: Request, eightball_id: str, WalletTypeInfo=Depends(get_key_type)
 ):
-    myextension = await get_myextension(myextension_id, req)
-    if not myextension:
+    eightball = await get_eightball(eightball_id, req)
+    if not eightball:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
-    return myextension.dict()
+    return eightball.dict()
 
 
 ## update a record
 
 
-@myextension_ext.put("/api/v1/myex/{myextension_id}")
-async def api_myextension_update(
+@eightball_ext.put("/api/v1/myex/{eightball_id}")
+async def api_eightball_update(
     req: Request,
-    data: CreateMyExtensionData,
-    myextension_id: str,
+    data: CreateEightBallData,
+    eightball_id: str,
     wallet: WalletTypeInfo = Depends(get_key_type),
 ):
-    if not myextension_id:
+    if not eightball_id:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
-    myextension = await get_myextension(myextension_id, req)
-    assert myextension, "MyExtension couldn't be retrieved"
+    eightball = await get_eightball(eightball_id, req)
+    assert eightball, "EightBall couldn't be retrieved"
 
-    if wallet.wallet.id != myextension.wallet:
+    if wallet.wallet.id != eightball.wallet:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail="Not your MyExtension."
+            status_code=HTTPStatus.FORBIDDEN, detail="Not your EightBall."
         )
-    myextension = await update_myextension(
-        myextension_id=myextension_id, **data.dict(), req=req
+    eightball = await update_eightball(
+        eightball_id=eightball_id, **data.dict(), req=req
     )
-    return myextension.dict()
+    return eightball.dict()
 
 
 ## Create a new record
 
 
-@myextension_ext.post("/api/v1/myex", status_code=HTTPStatus.CREATED)
-async def api_myextension_create(
+@eightball_ext.post("/api/v1/myex", status_code=HTTPStatus.CREATED)
+async def api_eightball_create(
     req: Request,
-    data: CreateMyExtensionData,
+    data: CreateEightBallData,
     wallet: WalletTypeInfo = Depends(require_admin_key),
 ):
-    myextension = await create_myextension(
+    eightball = await create_eightball(
         wallet_id=wallet.wallet.id, data=data, req=req
     )
-    return myextension.dict()
+    return eightball.dict()
 
 
 ## Delete a record
 
 
-@myextension_ext.delete("/api/v1/myex/{myextension_id}")
-async def api_myextension_delete(
-    myextension_id: str, wallet: WalletTypeInfo = Depends(require_admin_key)
+@eightball_ext.delete("/api/v1/myex/{eightball_id}")
+async def api_eightball_delete(
+    eightball_id: str, wallet: WalletTypeInfo = Depends(require_admin_key)
 ):
-    myextension = await get_myextension(myextension_id)
+    eightball = await get_eightball(eightball_id)
 
-    if not myextension:
+    if not eightball:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
 
-    if myextension.wallet != wallet.wallet.id:
+    if eightball.wallet != wallet.wallet.id:
         raise HTTPException(
-            status_code=HTTPStatus.FORBIDDEN, detail="Not your MyExtension."
+            status_code=HTTPStatus.FORBIDDEN, detail="Not your EightBall."
         )
 
-    await delete_myextension(myextension_id)
+    await delete_eightball(eightball_id)
     return "", HTTPStatus.NO_CONTENT
 
 
@@ -137,28 +137,28 @@ async def api_myextension_delete(
 ## This endpoint creates a payment
 
 
-@myextension_ext.post(
-    "/api/v1/myex/payment/{myextension_id}", status_code=HTTPStatus.CREATED
+@eightball_ext.post(
+    "/api/v1/myex/payment/{eightball_id}", status_code=HTTPStatus.CREATED
 )
 async def api_tpos_create_invoice(
-    myextension_id: str, amount: int = Query(..., ge=1), memo: str = ""
+    eightball_id: str, amount: int = Query(..., ge=1), memo: str = ""
 ) -> dict:
-    myextension = await get_myextension(myextension_id)
+    eightball = await get_eightball(eightball_id)
 
-    if not myextension:
+    if not eightball:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
 
     # we create a payment and add some tags, so tasks.py can grab the payment once its paid
 
     try:
         payment_hash, payment_request = await create_invoice(
-            wallet_id=myextension.wallet,
+            wallet_id=eightball.wallet,
             amount=amount,
-            memo=f"{memo} to {myextension.name}" if memo else f"{myextension.name}",
+            memo=f"{memo} to {eightball.name}" if memo else f"{eightball.name}",
             extra={
-                "tag": "myextension",
+                "tag": "eightball",
                 "amount": amount,
             },
         )

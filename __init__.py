@@ -7,24 +7,24 @@ from lnbits.helpers import template_renderer
 from lnbits.tasks import create_permanent_unique_task
 from loguru import logger
 
-logger.debug("This logged message is from myextension/__init__.py, you can debug in your extension using 'import logger from loguru' and 'logger.debug(<thing-to-log>)'.")
+logger.debug("This logged message is from eightball/__init__.py, you can debug in your extension using 'import logger from loguru' and 'logger.debug(<thing-to-log>)'.")
 
-db = Database("ext_myextension")
+db = Database("ext_eightball")
 
-myextension_ext: APIRouter = APIRouter(
-    prefix="/myextension", tags=["MyExtension"]
+eightball_ext: APIRouter = APIRouter(
+    prefix="/eightball", tags=["EightBall"]
 )
 
-myextension_static_files = [
+eightball_static_files = [
     {
-        "path": "/myextension/static",
-        "name": "myextension_static",
+        "path": "/eightball/static",
+        "name": "eightball_static",
     }
 ]
 
 
-def myextension_renderer():
-    return template_renderer(["myextension/templates"])
+def eightball_renderer():
+    return template_renderer(["eightball/templates"])
 
 
 from .lnurl import *
@@ -34,13 +34,13 @@ from .views_api import *
 
 scheduled_tasks: list[asyncio.Task] = []
 
-def myextension_stop():
+def eightball_stop():
     for task in scheduled_tasks:
         try:
             task.cancel()
         except Exception as ex:
             logger.warning(ex)
 
-def myextension_start():
-    task = create_permanent_unique_task("ext_myextension", wait_for_paid_invoices)
+def eightball_start():
+    task = create_permanent_unique_task("ext_eightball", wait_for_paid_invoices)
     scheduled_tasks.append(task)

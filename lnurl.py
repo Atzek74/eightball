@@ -4,13 +4,13 @@
 
 from http import HTTPStatus
 from fastapi import Depends, Query, Request
-from . import myextension_ext
-from .crud import get_myextension
+from . import eightball_ext
+from .crud import get_eightball
 from lnbits.core.services import create_invoice, pay_invoice
 from loguru import logger
 from typing import Optional
-from .crud import update_myextension
-from .models import MyExtension
+from .crud import update_eightball
+from .models import EightBall
 import shortuuid
 
 #################################################
@@ -20,61 +20,61 @@ import shortuuid
 #################################################
 
 
-@myextension_ext.get(
-    "/api/v1/lnurl/pay/{myextension_id}",
+@eightball_ext.get(
+    "/api/v1/lnurl/pay/{eightball_id}",
     status_code=HTTPStatus.OK,
-    name="myextension.api_lnurl_pay",
+    name="eightball.api_lnurl_pay",
 )
 async def api_lnurl_pay(
     request: Request,
-    myextension_id: str,
+    eightball_id: str,
 ):
-    myextension = await get_myextension(myextension_id)
-    if not myextension:
-        return {"status": "ERROR", "reason": "No myextension found"}
+    eightball = await get_eightball(eightball_id)
+    if not eightball:
+        return {"status": "ERROR", "reason": "No eightball found"}
     return {
         "callback": str(
             request.url_for(
-                "myextension.api_lnurl_pay_callback", myextension_id=myextension_id
+                "eightball.api_lnurl_pay_callback", eightball_id=eightball_id
             )
         ),
-        "maxSendable": myextension.lnurlpayamount * 1000,
-        "minSendable": myextension.lnurlpayamount * 1000,
-        "metadata": '[["text/plain", "' + myextension.name + '"]]',
+        "maxSendable": eightball.lnurlpayamount * 1000,
+        "minSendable": eightball.lnurlpayamount * 1000,
+        "metadata": '[["text/plain", "' + eightball.name + '"]]',
         "tag": "payRequest",
     }
 
 
-@myextension_ext.get(
-    "/api/v1/lnurl/paycb/{myextension_id}",
+@eightball_ext.get(
+    "/api/v1/lnurl/paycb/{eightball_id}",
     status_code=HTTPStatus.OK,
-    name="myextension.api_lnurl_pay_callback",
+    name="eightball.api_lnurl_pay_callback",
 )
 async def api_lnurl_pay_cb(
     request: Request,
-    myextension_id: str,
+    eightball_id: str,
     amount: int = Query(...),
 ):
-    myextension = await get_myextension(myextension_id)
-    logger.debug(myextension)
-    if not myextension:
-        return {"status": "ERROR", "reason": "No myextension found"}
+    eightball = await get_eightball(eightball_id)
+    logger.debug(eightball)
+    if not eightball:
+        return {"status": "ERROR", "reason": "No eightball found"}
 
     payment_hash, payment_request = await create_invoice(
-        wallet_id=myextension.wallet,
+        wallet_id=eightball.wallet,
         amount=int(amount / 1000),
-        memo=myextension.name,
-        unhashed_description=f'[["text/plain", "{myextension.name}"]]'.encode(),
+        memo=eightball.name,
+        unhashed_description=f'[["text/plain", "{eightball.name}"]]'.encode(),
         extra={
-            "tag": "MyExtension",
-            "myextensionId": myextension_id,
+            "tag": "EightBall",
+            "eightballId": eightball_id,
             "extra": request.query_params.get("amount"),
         },
     )
     return {
         "pr": payment_request,
         "routes": [],
-        "successAction": {"tag": "message", "message": f"Paid {myextension.name}"},
+        "successAction": {"tag": "message", "message": f"Paid {eightball.name}"},
     }
 
 
@@ -87,20 +87,20 @@ async def api_lnurl_pay_cb(
 #################################################
 
 
-@myextension_ext.get(
-    "/api/v1/lnurl/withdraw/{myextension_id}/{tickerhash}",
+@eightball_ext.get(
+    "/api/v1/lnurl/withdraw/{eightball_id}/{tickerhash}",
     status_code=HTTPStatus.OK,
-    name="myextension.api_lnurl_withdraw",
+    name="eightball.api_lnurl_withdraw",
 )
 async def api_lnurl_withdraw(
     request: Request,
-    myextension_id: str,
+    eightball_id: str,
     tickerhash: str,
 ):
-    myextension = await get_myextension(myextension_id)
-    if not myextension:
-        return {"status": "ERROR", "reason": "No myextension found"}
-    k1 = shortuuid.uuid(name=myextension.id + str(myextension.ticker))
+    eightball = await get_eightball(eightball_id)
+    if not eightball:
+        return {"status": "ERROR", "reason": "No eightball found"}
+    k1 = shortuuid.uuid(name=eightball.id + str(eightball.ticker))
     if k1 != tickerhash:
         return {"status": "ERROR", "reason": "LNURLw already used"}
 
@@ -108,47 +108,47 @@ async def api_lnurl_withdraw(
         "tag": "withdrawRequest",
         "callback": str(
             request.url_for(
-                "myextension.api_lnurl_withdraw_callback", myextension_id=myextension_id
+                "eightball.api_lnurl_withdraw_callback", eightball_id=eightball_id
             )
         ),
         "k1": k1,
-        "defaultDescription": myextension.name,
-        "maxWithdrawable": myextension.lnurlwithdrawamount * 1000,
-        "minWithdrawable": myextension.lnurlwithdrawamount * 1000,
+        "defaultDescription": eightball.name,
+        "maxWithdrawable": eightball.lnurlwithdrawamount * 1000,
+        "minWithdrawable": eightball.lnurlwithdrawamount * 1000,
     }
 
 
-@myextension_ext.get(
-    "/api/v1/lnurl/withdrawcb/{myextension_id}",
+@eightball_ext.get(
+    "/api/v1/lnurl/withdrawcb/{eightball_id}",
     status_code=HTTPStatus.OK,
-    name="myextension.api_lnurl_withdraw_callback",
+    name="eightball.api_lnurl_withdraw_callback",
 )
 async def api_lnurl_withdraw_cb(
     request: Request,
-    myextension_id: str,
+    eightball_id: str,
     pr: Optional[str] = None,
     k1: Optional[str] = None,
 ):
     assert k1, "k1 is required"
     assert pr, "pr is required"
-    myextension = await get_myextension(myextension_id)
-    if not myextension:
-        return {"status": "ERROR", "reason": "No myextension found"}
+    eightball = await get_eightball(eightball_id)
+    if not eightball:
+        return {"status": "ERROR", "reason": "No eightball found"}
 
-    k1Check = shortuuid.uuid(name=myextension.id + str(myextension.ticker))
+    k1Check = shortuuid.uuid(name=eightball.id + str(eightball.ticker))
     if k1Check != k1:
         return {"status": "ERROR", "reason": "Wrong k1 check provided"}
 
-    await update_myextension(
-        myextension_id=myextension_id, ticker=myextension.ticker + 1
+    await update_eightball(
+        eightball_id=eightball_id, ticker=eightball.ticker + 1
     )
     await pay_invoice(
-        wallet_id=myextension.wallet,
+        wallet_id=eightball.wallet,
         payment_request=pr,
-        max_sat=int(myextension.lnurlwithdrawamount * 1000),
+        max_sat=int(eightball.lnurlwithdrawamount * 1000),
         extra={
-            "tag": "MyExtension",
-            "myextensionId": myextension_id,
+            "tag": "EightBall",
+            "eightballId": eightball_id,
             "lnurlwithdraw": True,
         },
     )

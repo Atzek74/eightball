@@ -8,7 +8,7 @@
   <div class="col-12 col-md-8 col-lg-7 q-gutter-y-md">
     <q-card>
       <q-card-section>
-        <q-btn unelevated color="primary" @click="formDialog.show = true">New MyExtension</q-btn>
+        <q-btn unelevated color="primary" @click="formDialog.show = true">New EightBall</q-btn>
       </q-card-section>
     </q-card>
 
@@ -16,7 +16,7 @@
       <q-card-section>
         <div class="row items-center no-wrap q-mb-md">
           <div class="col">
-            <h5 class="text-subtitle1 q-my-none">MyExtension</h5>
+            <h5 class="text-subtitle1 q-my-none">EightBall</h5>
           </div>
           <div class="col-auto">
             <q-btn flat color="grey" @click="exportCSV">Export to CSV</q-btn>
@@ -24,13 +24,13 @@
         </div>
         <q-table dense flat :data="myex" row-key="id" :columns="myexTable.columns"
           :pagination.sync="myexTable.pagination">
-          <myextension v-slot:header="props">
+          <eightball v-slot:header="props">
             <q-tr :props="props">
               <q-th v-for="col in props.cols" :key="col.name" :props="props">
                 ${ col.label }
               </q-th>
             </q-tr>
-          </myextension>
+          </eightball>
 
           <template v-slot:body="props">
             <q-tr :props="props">
@@ -43,17 +43,17 @@
                   class="q-mr-sm" @click="openUrlDialog(props.row.id)"></q-btn></q-td>
               <q-td auto-width>
                 <q-btn unelevated dense size="sm" icon="launch" :color="($q.dark.isActive) ? 'grey-7' : 'grey-5'"
-                  type="a" :href="props.row.myextension" target="_blank"><q-tooltip>Open public
+                  type="a" :href="props.row.eightball" target="_blank"><q-tooltip>Open public
                     page</q-tooltip></q-btn></q-td>
 
               <q-td>
-                <q-btn flat dense size="xs" @click="updateMyExtensionForm(props.row.id)" icon="edit" color="light-blue">
+                <q-btn flat dense size="xs" @click="updateEightBallForm(props.row.id)" icon="edit" color="light-blue">
                   <q-tooltip> Edit copilot </q-tooltip>
                 </q-btn>
               </q-td>
 
               <q-td>
-                <q-btn flat dense size="xs" @click="deleteMyExtension(props.row.id)" icon="cancel" color="pink">
+                <q-btn flat dense size="xs" @click="deleteEightBall(props.row.id)" icon="cancel" color="pink">
                   <q-tooltip> Delete copilot </q-tooltip>
                 </q-btn>
               </q-td>
@@ -69,16 +69,16 @@
   <div class="col-12 col-md-4 col-lg-5 q-gutter-y-md">
     <q-card>
       <q-card-section>
-        <h6 class="text-subtitle1 q-my-none">{{SITE_TITLE}} MyExtension extension</h6>
+        <h6 class="text-subtitle1 q-my-none">{{SITE_TITLE}} EightBall extension</h6>
         <p>Simple extension you can use as a base for your own extension. <br /> Includes very simple LNURL-pay and
           LNURL-withdraw example.</p>
       </q-card-section>
       <q-card-section class="q-pa-none">
         <q-separator></q-separator>
         <q-list>
-          {% include "myextension/_api_docs.html" %}
+          {% include "eightball/_api_docs.html" %}
           <q-separator></q-separator>
-          {% include "myextension/_myextension.html" %}
+          {% include "eightball/_eightball.html" %}
         </q-list>
       </q-card-section>
     </q-card>
@@ -90,7 +90,7 @@
 
   <q-dialog v-model="formDialog.show" position="top" @hide="closeFormDialog">
     <q-card class="q-pa-lg q-pt-xl" style="width: 500px">
-      <q-form @submit="sendMyExtensionData" class="q-gutter-md">
+      <q-form @submit="sendEightBallData" class="q-gutter-md">
         <q-input filled dense v-model.trim="formDialog.data.name" label="Name"
           placeholder="Name for your record"></q-input>
         <q-select filled dense emit-value v-model="formDialog.data.wallet" :options="g.user.walletOptions"
@@ -100,10 +100,10 @@
         <q-input filled dense type="number" v-model.trim="formDialog.data.lnurlpayamount"
           label="LNURL-pay amount"></q-input>
         <div class="row q-mt-lg">
-          <q-btn v-if="formDialog.data.id" unelevated color="primary" type="submit">Update MyExtension</q-btn>
+          <q-btn v-if="formDialog.data.id" unelevated color="primary" type="submit">Update EightBall</q-btn>
           <q-btn v-else unelevated color="primary"
             :disable="formDialog.data.name == null || formDialog.data.wallet == null || formDialog.data.lnurlwithdrawamount == null || formDialog.data.lnurlpayamount == null"
-            type="submit">Create MyExtension</q-btn>
+            type="submit">Create EightBall</q-btn>
           <q-btn v-close-popup flat color="grey" class="q-ml-auto">Cancel</q-btn>
         </div>
       </q-form>
@@ -159,12 +159,12 @@
   ///////////////////////////////////////////////////
   //////////an object we can update with data////////
   ///////////////////////////////////////////////////
-  const mapMyExtension = obj => {
+  const mapEightBall = obj => {
     obj.date = Quasar.utils.date.formatDate(
       new Date(obj.time * 1000),
       'YYYY-MM-DD HH:mm'
     )
-    obj.myextension = ['/myextension/', obj.id].join('')
+    obj.eightball = ['/eightball/', obj.id].join('')
     return obj
   }
   new Vue({
@@ -213,22 +213,22 @@
         this.formDialog.show = false
         this.formDialog.data = {}
       },
-      getMyExtensions: function () {
+      getEightBalls: function () {
         var self = this
 
         LNbits.api
           .request(
             'GET',
-            '/myextension/api/v1/myex?all_wallets=true',
+            '/eightball/api/v1/myex?all_wallets=true',
             this.g.user.wallets[0].inkey
           )
           .then(function (response) {
             self.myex = response.data.map(function (obj) {
-              return mapMyExtension(obj)
+              return mapEightBall(obj)
             })
           })
       },
-      sendMyExtensionData() {
+      sendEightBallData() {
         const data = {
           name: this.formDialog.data.name,
           lnurlwithdrawamount: this.formDialog.data.lnurlwithdrawamount,
@@ -241,15 +241,15 @@
           data.id = this.formDialog.data.id
           data.wallet = wallet.id
           data.total = this.formDialog.data.total
-          this.updateMyExtension(wallet, data)
+          this.updateEightBall(wallet, data)
         } else {
-          this.createMyExtension(wallet, data)
+          this.createEightBall(wallet, data)
         }
       },
-      updateMyExtensionForm(tempId) {
-        const myextension = _.findWhere(this.myex, { id: tempId })
+      updateEightBallForm(tempId) {
+        const eightball = _.findWhere(this.myex, { id: tempId })
         this.formDialog.data = {
-          ...myextension
+          ...eightball
         }
         if (this.formDialog.data.tip_wallet != '') {
           this.formDialog.advanced.tips = true
@@ -259,22 +259,22 @@
         }
         this.formDialog.show = true
       },
-      createMyExtension(wallet, data) {
+      createEightBall(wallet, data) {
         LNbits.api
-          .request('POST', '/myextension/api/v1/myex', wallet.adminkey, data)
+          .request('POST', '/eightball/api/v1/myex', wallet.adminkey, data)
           .then(response => {
-            this.myex.push(mapMyExtension(response.data))
+            this.myex.push(mapEightBall(response.data))
             this.closeFormDialog()
           })
           .catch(error => {
             LNbits.utils.notifyApiError(error)
           })
       },
-      updateMyExtension(wallet, data) {
+      updateEightBall(wallet, data) {
         LNbits.api
           .request(
             'PUT',
-            `/myextension/api/v1/myex/${data.id}`,
+            `/eightball/api/v1/myex/${data.id}`,
             wallet.adminkey,
             data
           )
@@ -282,25 +282,25 @@
             this.myex = _.reject(this.myex, obj => {
               return obj.id == data.id
             })
-            this.myex.push(mapMyExtension(response.data))
+            this.myex.push(mapEightBall(response.data))
             this.closeFormDialog()
           })
           .catch(error => {
             LNbits.utils.notifyApiError(error)
           })
       },
-      deleteMyExtension: function (tempId) {
+      deleteEightBall: function (tempId) {
         var self = this
-        var myextension = _.findWhere(this.myex, { id: tempId })
+        var eightball = _.findWhere(this.myex, { id: tempId })
 
         LNbits.utils
-          .confirmDialog('Are you sure you want to delete this MyExtension?')
+          .confirmDialog('Are you sure you want to delete this EightBall?')
           .onOk(function () {
             LNbits.api
               .request(
                 'DELETE',
-                '/myextension/api/v1/myex/' + tempId,
-                _.findWhere(self.g.user.wallets, { id: myextension.wallet }).adminkey
+                '/eightball/api/v1/myex/' + tempId,
+                _.findWhere(self.g.user.wallets, { id: eightball.wallet }).adminkey
               )
               .then(function (response) {
                 self.myex = _.reject(self.myex, function (obj) {
@@ -316,22 +316,22 @@
         LNbits.utils.exportCSV(this.myexTable.columns, this.myex)
       },
       itemsArray(tempId) {
-        const myextension = _.findWhere(this.myex, { id: tempId })
-        return [...myextension.itemsMap.values()]
+        const eightball = _.findWhere(this.myex, { id: tempId })
+        return [...eightball.itemsMap.values()]
       },
       openformDialog(id) {
         const [tempId, itemId] = id.split(':')
-        const myextension = _.findWhere(this.myex, { id: tempId })
+        const eightball = _.findWhere(this.myex, { id: tempId })
         if (itemId) {
-          const item = myextension.itemsMap.get(id)
+          const item = eightball.itemsMap.get(id)
           this.formDialog.data = {
             ...item,
-            myextension: tempId
+            eightball: tempId
           }
         } else {
-          this.formDialog.data.myextension = tempId
+          this.formDialog.data.eightball = tempId
         }
-        this.formDialog.data.currency = myextension.currency
+        this.formDialog.data.currency = eightball.currency
         this.formDialog.show = true
       },
       closeformDialog() {
@@ -345,7 +345,7 @@
         this.connectWebocket(this.urlDialog.data.id)
         this.urlDialog.show = true
       },
-      createInvoice(walletId, myextensionId) {
+      createInvoice(walletId, eightballId) {
         ///////////////////////////////////////////////////
         ///Simple call to the api to create an invoice/////
         ///////////////////////////////////////////////////
@@ -356,10 +356,10 @@
         const dataToSend = {
           out: false,
           amount: this.invoiceAmount,
-          memo: 'Invoice created by MyExtension',
+          memo: 'Invoice created by EightBall',
           extra: {
-            tag: 'MyExtension',
-            myextensionId: myextensionId
+            tag: 'EightBall',
+            eightballId: eightballId
           }
         }
         LNbits.api
@@ -440,7 +440,7 @@
     ///////////////////////////////////////////////////
     created: function () {
       if (this.g.user.wallets.length) {
-        this.getMyExtensions()
+        this.getEightBalls()
       }
     }
   })

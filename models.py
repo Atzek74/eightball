@@ -9,26 +9,20 @@ from lnbits.lnurl import encode as lnurl_encode
 from urllib.parse import urlparse
 
 
-class CreateMyExtensionData(BaseModel):
+class CreateEightBallData(BaseModel):
     wallet: Optional[str]
     name: Optional[str]
-    total: Optional[int]
+    wordlist: Optional[str]
     lnurlpayamount: Optional[int]
-    lnurlwithdrawamount: Optional[int]
-    ticker: Optional[int]
 
-
-class MyExtension(BaseModel):
+class EightBall(BaseModel):
     id: str
     wallet: Optional[str]
     name: Optional[str]
-    total: Optional[int]
+    wordlist: Optional[str]
     lnurlpayamount: Optional[int]
-    lnurlwithdrawamount: Optional[int]
     lnurlpay: Optional[str]
-    lnurlwithdraw: Optional[str]
-    ticker: Optional[int]
-
+ 
     @classmethod
-    def from_row(cls, row: Row) -> "MyExtension":
+    def from_row(cls, row: Row) -> "EightBall":
         return cls(**dict(row))

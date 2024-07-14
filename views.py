@@ -9,8 +9,8 @@ from lnbits.core.models import User
 from lnbits.decorators import check_user_exists
 from lnbits.settings import settings
 
-from . import myextension_ext, myextension_renderer
-from .crud import get_myextension
+from . import eightball_ext, eightball_renderer
+from .crud import get_eightball
 
 myex = Jinja2Templates(directory="myex")
 
@@ -23,30 +23,30 @@ myex = Jinja2Templates(directory="myex")
 # Backend admin page
 
 
-@myextension_ext.get("/", response_class=HTMLResponse)
+@eightball_ext.get("/", response_class=HTMLResponse)
 async def index(request: Request, user: User = Depends(check_user_exists)):
-    return myextension_renderer().TemplateResponse(
-        "myextension/index.html", {"request": request, "user": user.dict()}
+    return eightball_renderer().TemplateResponse(
+        "eightball/index.html", {"request": request, "user": user.dict()}
     )
 
 
 # Frontend shareable page
 
 
-@myextension_ext.get("/{myextension_id}")
-async def myextension(request: Request, myextension_id):
-    myextension = await get_myextension(myextension_id, request)
-    if not myextension:
+@eightball_ext.get("/{eightball_id}")
+async def eightball(request: Request, eightball_id):
+    eightball = await get_eightball(eightball_id, request)
+    if not eightball:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
-    return myextension_renderer().TemplateResponse(
-        "myextension/myextension.html",
+    return eightball_renderer().TemplateResponse(
+        "eightball/eightball.html",
         {
             "request": request,
-            "myextension_id": myextension_id,
-            "lnurlpay": myextension.lnurlpay,
-            "web_manifest": f"/myextension/manifest/{myextension_id}.webmanifest",
+            "eightball_id": eightball_id,
+            "lnurlpay": eightball.lnurlpay,
+            "web_manifest": f"/eightball/manifest/{eightball_id}.webmanifest",
         },
     )
 
@@ -54,17 +54,17 @@ async def myextension(request: Request, myextension_id):
 # Manifest for public page, customise or remove manifest completely
 
 
-@myextension_ext.get("/manifest/{myextension_id}.webmanifest")
-async def manifest(myextension_id: str):
-    myextension = await get_myextension(myextension_id)
-    if not myextension:
+@eightball_ext.get("/manifest/{eightball_id}.webmanifest")
+async def manifest(eightball_id: str):
+    eightball = await get_eightball(eightball_id)
+    if not eightball:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="MyExtension does not exist."
+            status_code=HTTPStatus.NOT_FOUND, detail="EightBall does not exist."
         )
 
     return {
         "short_name": settings.lnbits_site_title,
-        "name": myextension.name + " - " + settings.lnbits_site_title,
+        "name": eightball.name + " - " + settings.lnbits_site_title,
         "icons": [
             {
                 "src": settings.lnbits_custom_logo
@@ -74,18 +74,18 @@ async def manifest(myextension_id: str):
                 "sizes": "900x900",
             }
         ],
-        "start_url": "/myextension/" + myextension_id,
+        "start_url": "/eightball/" + eightball_id,
         "background_color": "#1F2234",
         "description": "Minimal extension to build on",
         "display": "standalone",
-        "scope": "/myextension/" + myextension_id,
+        "scope": "/eightball/" + eightball_id,
         "theme_color": "#1F2234",
         "shortcuts": [
             {
-                "name": myextension.name + " - " + settings.lnbits_site_title,
-                "short_name": myextension.name,
-                "description": myextension.name + " - " + settings.lnbits_site_title,
-                "url": "/myextension/" + myextension_id,
+                "name": eightball.name + " - " + settings.lnbits_site_title,
+                "short_name": eightball.name,
+                "description": eightball.name + " - " + settings.lnbits_site_title,
+                "url": "/eightball/" + eightball_id,
             }
         ],
     }
